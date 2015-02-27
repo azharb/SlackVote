@@ -6,7 +6,8 @@
     "express": "~3.4.0",
     "express3-handlebars": "0.4.x",
     "mongodb": "*",
-    "monk": "*"
+    "monk": "*",
+    "slack-node": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
