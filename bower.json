@@ -1,0 +1,10 @@
+{
+  "name": "slackvote",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular": "~1.0.8",
+    "jquery": "2.0.3",
+    "modernizr": "~2.6.2"
+  },
+  "devDependencies": {}
+}
