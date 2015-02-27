@@ -126,10 +126,10 @@ app.post('/vote', function(req, res, next) {
         function(err, doc) {
             console.log(err);
             console.log(doc);
-            if (doc.length > 0) {
-                res.json('Noted');
+            if (err) {
+                res.json('Something went wrong. Your vote was not recorded.');
             } else {
-                res.json('Something went wrong. Your vote was not recorded');
+                res.json('Your vote has been recorded.');
             }
         }
     );
