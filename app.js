@@ -55,6 +55,7 @@ app.post('/outgoing', function(req, res, next) {
     var votes = req.db.get('votes');
 
     var trigger_word = req.body.trigger_word;
+    var trigger_text = req.body.text;
 
     // config for slack api call
     var slack = new Slack(appAccessToken);
@@ -91,7 +92,7 @@ app.post('/outgoing', function(req, res, next) {
         // get channel members
         slack.api('channels.info', { 'channel' : channelID }, function(err, response) {
             
-            var params = { userID : { $in : response.channel.members }, status : 1 };
+            var params = { userID : { $in : response.channel.members }, channelID : channelID, status : 1 };
             
             votes.find(
                 params,
@@ -100,7 +101,10 @@ app.post('/outgoing', function(req, res, next) {
                     
                     if (results.length > 0) {
                         results.forEach(function(r) {
-                            returnText += r.username + " votes " + r.vote + "\n";
+                            if (trigger_text.indexOf('anon') < 0) {
+                                returnText += r.username + " votes ";
+                            }
+                            returnText += r.vote + "\n";
                         });
                         res.json({ text: returnText });
                     } else {
@@ -109,6 +113,21 @@ app.post('/outgoing', function(req, res, next) {
                 }
             );    
         });     
+    } else if (trigger_word == 'votecount') {
+        // get channel members
+        slack.api('channels.info', { 'channel' : channelID }, function(err, response) {
+            
+            var params = { userID : { $in : response.channel.members }, channelID : channelID, status : 1 };
+            
+            votes.find(
+                params,
+                function(err, results){
+                    if (err) throw err;
+                    
+                    res.json({ text : results.length + " votes casted" });
+                }
+            );    
+        });
     } else {
         res.json({ text : 'Unknown trigger' });
     }
@@ -119,9 +138,10 @@ app.post('/outgoing', function(req, res, next) {
 app.post('/vote', function(req, res, next) {
     var votes = req.db.get('votes');
     var input = req.body;
+    console.log(input);
 
     votes.update(
-        { userID : input.user_id, status : 0 },
+        { userID : input.user_id, channelID : input.channel_id },
         { $set: { status : 1, vote : input.text, username : input.user_name }},
         function(err, doc) {
             console.log(err);
@@ -129,7 +149,7 @@ app.post('/vote', function(req, res, next) {
             if (err) {
                 res.json('Something went wrong. Your vote was not recorded.');
             } else {
-                res.json('Your vote has been recorded.');
+                res.json('Your vote \'' + input.text + '\' has been recorded.');
             }
         }
     );
