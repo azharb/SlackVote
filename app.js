@@ -4,6 +4,10 @@
  * Express Dependencies
  */
 var express = require('express');
+var nconf = require('nconf');
+nconf.argv()
+       .env()
+       .file({ file: './config.json' });
 var app = express();
 var port = 3000;
 
@@ -22,8 +26,7 @@ var db = monk(mongoUri);
  * Slack configuration
  */
 var Slack = require('slack-node');
-var webhookUri = 'https://hooks.slack.com/services/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';
-var appAccessToken = 'xoxp-2205935508-2209690286-3832470983-f50ac2';
+var appAccessToken = nconf.get('appAccessToken');
 
 // For gzip compression
 app.use(express.compress());
@@ -53,6 +56,11 @@ app.get('/', function(request, response, next) {
 // Outgoing webhooks from Slack
 app.post('/outgoing', function(req, res, next) {
     var votes = req.db.get('votes');
+
+    if (req.body.token != nconf.get('outgoingToken')) {
+        res.json({ text : 'Invalid token' });
+        return;
+    }
 
     var trigger_word = req.body.trigger_word;
     var trigger_text = req.body.text;
@@ -136,10 +144,15 @@ app.post('/outgoing', function(req, res, next) {
 
 // Slack command - vote from a user
 app.post('/vote', function(req, res, next) {
+
     var votes = req.db.get('votes');
     var input = req.body;
     console.log(input);
 
+    if (input.token != nconf.get('commandToken')) {
+        res.json('Invalid token');
+        return;
+    }
     votes.update(
         { userID : input.user_id, channelID : input.channel_id },
         { $set: { status : 1, vote : input.text, username : input.user_name }},
