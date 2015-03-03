@@ -13,6 +13,12 @@ Add a configuration file to the root of the project called "config.json" with th
 }
 ```
 
+Slack app can be created here: [link](https://api.slack.com/applications)
+
+Outgoing webhooks can be created here: [link](https://api.slack.com/outgoing-webhooks)
+
+Slack commands can be created here: [link](https://api.slack.com/slash-commands)
+
 ###Use
 ![image](howto.png)
 
